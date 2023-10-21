@@ -1,8 +1,10 @@
+require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const app = express();
+const api = require('./routes/routes');
 
-require('dotenv').config({ path: '../.env' });
+app.use('/api', api);
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+app.listen(4000, () => {
+  console.log('Server is running on port 4000');
 });
