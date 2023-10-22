@@ -3,11 +3,15 @@ import axios from 'axios';
 import React from 'react';
 import { Autocomplete, Button, Grid, TextField } from '@mui/material';
 import styled from '@emotion/styled';
+import SnackbarComponent from '../components/SnackbarComponent';
 
 const MatchPage = () => {
   const [players, setPlayers] = useState([]);
   const [team1, setTeam1] = useState({ ids: [], score: 0, is_team: false });
   const [team2, setTeam2] = useState({ ids: [], score: 0, is_team: false });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -25,6 +29,50 @@ const MatchPage = () => {
 
     fetchPlayers();
   }, []);
+
+  const isSaveDisabled = () => {
+    const haveCommonPlayers = () => {
+      for (let i = 0; i < team1.ids.length; i++) {
+        if (team2.ids.includes(team1.ids[i])) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    if (
+      team1.ids.length === 0 ||
+      team2.ids.length === 0 ||
+      haveCommonPlayers()
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const openSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSave = async () => {
+    const update = await axios.post(
+      '/api/scores',
+      { team1, team2 },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    if (update.status === 201) {
+      openSnackbar('Match saved successfully', 'success');
+      setTeam1({ ids: [], score: 0, is_team: false });
+      setTeam2({ ids: [], score: 0, is_team: false });
+    }
+  };
+
   return (
     <Box>
       <Grid
@@ -40,6 +88,7 @@ const MatchPage = () => {
           <Section>
             <StyledAutocomplete
               id='player1'
+              value={team1.ids}
               options={
                 team1.ids.length > 1
                   ? players.filter((player) => team1.ids.includes(player.id))
@@ -54,8 +103,12 @@ const MatchPage = () => {
                       ids: value.map((player) => player.id),
                       is_team: true,
                     });
-                  } else {
-                    setTeam1({ ...team1, ids: [value.id], is_team: false });
+                  } else if (value.length === 1) {
+                    setTeam1({
+                      ...team1,
+                      ids: value[0]?.id ? [value[0].id] : [],
+                      is_team: false,
+                    });
                   }
                 }
               }}
@@ -67,7 +120,6 @@ const MatchPage = () => {
                 />
               )}
               multiple
-              limitTags={2}
             />
             <Grid sx={{ fontSize: '60px' }}>{team1.score}</Grid>
             <Grid>
@@ -88,6 +140,7 @@ const MatchPage = () => {
           <Section>
             <StyledAutocomplete
               id='player2'
+              value={team2.ids}
               options={
                 team2.ids.length > 1
                   ? players.filter((player) => team2.ids.includes(player.id))
@@ -103,7 +156,11 @@ const MatchPage = () => {
                       is_team: true,
                     });
                   } else {
-                    setTeam2({ ...team2, ids: [value.id], is_team: false });
+                    setTeam2({
+                      ...team2,
+                      ids: value[0]?.id ? [value[0].id] : [],
+                      is_team: false,
+                    });
                   }
                 }
               }}
@@ -142,14 +199,21 @@ const MatchPage = () => {
         >
           <Button
             variant='contained'
-            onClick={() => {
-              console.log(team1, team2);
+            disabled={isSaveDisabled()}
+            onClick={async () => {
+              handleSave();
             }}
           >
             Save Final Score
           </Button>
         </Grid>
       </Container>
+      <SnackbarComponent
+        open={snackbarOpen}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
+      />
     </Box>
   );
 };

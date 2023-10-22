@@ -2,7 +2,7 @@ require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const app = express();
 const api = require('./routes/routes');
-
+app.use(express.json());
 app.use('/api', api);
 
 app.listen(4000, () => {
