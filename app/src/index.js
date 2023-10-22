@@ -25,8 +25,9 @@ if (rootElement) {
       <ThemeProvider theme={theme}>
         <BrowserRouter>
           <Routes>
-            <Route path='/' Component={App} />
-            <Route path='/match' Component={MatchPage} />
+            <Route path='/' Component={App}>
+              <Route path='/match' Component={MatchPage} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
