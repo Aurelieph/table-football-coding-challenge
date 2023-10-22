@@ -31,7 +31,7 @@ const SCORES_DATA_SAMPLE = [
     goals_against: 3,
     is_winner: true,
     match_id: 1,
-    opponent_id: 2,
+    team_no: 2,
   },
   {
     id: 2,
@@ -40,7 +40,7 @@ const SCORES_DATA_SAMPLE = [
     goals_against: 5,
     is_winner: false,
     match_id: 1,
-    opponent_id: 1,
+    team_no: 1,
   },
   {
     id: 3,
@@ -49,7 +49,7 @@ const SCORES_DATA_SAMPLE = [
     goals_against: 5,
     is_winner: false,
     match_id: 2,
-    opponent_id: 3,
+    team_no: 2,
   },
   {
     id: 4,
@@ -58,7 +58,7 @@ const SCORES_DATA_SAMPLE = [
     goals_against: 3,
     is_winner: true,
     match_id: 2,
-    opponent_id: 1,
+    team_no: 1,
   },
 ];
 
@@ -79,11 +79,11 @@ exports.up = async function (knex) {
   await knex.schema.createTable(SCORES_TABLE, (t) => {
     t.increments('id').primary();
     t.integer('player_id').notNullable();
-    t.integer('goals_for').notNullable();
-    t.integer('goals_against').notNullable();
+    t.integer('goals_for').notNullable().unsigned();
+    t.integer('goals_against').notNullable().unsigned();
     t.boolean('is_winner').notNullable();
     t.integer('match_id').notNullable();
-    t.integer('opponent_id').notNullable();
+    t.integer('team_no').notNullable();
   });
 
   await knex(PLAYERS_TABLE).insert(PLAYERS_DATA_SAMPLE);
