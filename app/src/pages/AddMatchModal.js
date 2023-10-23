@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import { Autocomplete, Button, Divider, Grid, TextField } from '@mui/material';
+import { Autocomplete, Button, Grid, TextField } from '@mui/material';
 import styled from '@emotion/styled';
 import { useOutletContext } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -43,7 +43,6 @@ export default function AddMatchModal({
   };
 
   const handleSave = async () => {
-    console.log('matches', matches);
     try {
       const update = await axios.post(
         '/api/matches',
@@ -68,13 +67,16 @@ export default function AddMatchModal({
   };
   const isSaveDisabled = () => {
     const hasMissingPlayers = matches.some((match) => {
-      return match.team1.ids.length === 0 || match.team2.ids.length === 0;
+      return (
+        (match.team1.ids.length === 0 && match.team2.ids.length > 0) ||
+        (match.team2.ids.length === 0 && match.team1.ids.length > 0)
+      );
     });
 
     if (hasMissingPlayers) {
       return {
         result: true,
-        message: 'Please select players for both teams',
+        message: 'Please select players for all teams',
       };
     }
     const hasCommonPlayers = matches.some((match) => {
@@ -90,6 +92,16 @@ export default function AddMatchModal({
     if (hasNegativeScore) {
       return { result: true, message: 'Score cannot be negative' };
     }
+    const hasNoPlayersOrScore = matches.some(
+      (match) =>
+        (match.team1.ids.length === 0 && match.team2.ids.length === 0) ||
+        (match.team1.score == 0 && match.team2.score == 0)
+    );
+
+    if (hasNoPlayersOrScore) {
+      return { result: true, message: '' };
+    }
+
     return { result: false, message: '' };
   };
 
@@ -157,6 +169,7 @@ export default function AddMatchModal({
                             value.map((player) => player.id),
                             'team1'
                           );
+                          handleInputChange(index, 'is_team', true, 'team1');
                         } else {
                           handleInputChange(
                             index,
@@ -184,9 +197,14 @@ export default function AddMatchModal({
                     label='Score 1'
                     size='small'
                     type='number'
-                    value={match.team1.score}
+                    value={match.team1.score || 0}
                     onChange={(e) =>
-                      handleInputChange(index, 'score', e.target.value, 'team1')
+                      handleInputChange(
+                        index,
+                        'score',
+                        e.target.value || 0,
+                        'team1'
+                      )
                     }
                   />
                 </Grid>
@@ -214,6 +232,7 @@ export default function AddMatchModal({
                             value.map((player) => player.id),
                             'team2'
                           );
+                          handleInputChange(index, 'is_team', true, 'team2');
                         } else {
                           handleInputChange(
                             index,
@@ -241,9 +260,14 @@ export default function AddMatchModal({
                     label='Score 2'
                     size='small'
                     type='number'
-                    value={match.team2.score}
+                    value={match.team2.score || 0}
                     onChange={(e) =>
-                      handleInputChange(index, 'score', e.target.value, 'team2')
+                      handleInputChange(
+                        index,
+                        'score',
+                        e.target.value || 0,
+                        'team2'
+                      )
                     }
                   />
                 </Grid>
@@ -289,7 +313,7 @@ const StyledBox = styled(Box)`
   width: 80%;
   margin: auto;
   background-color: white;
-  padding: 20px;
+  padding: 40px;
   border-radius: 10px;
   max-width: 800px;
 `;

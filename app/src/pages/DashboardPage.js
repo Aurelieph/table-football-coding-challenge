@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import {
   Button,
+  ButtonGroup,
   Grid,
   Table,
   TableBody,
@@ -34,14 +35,27 @@ const COLUMNS_STATS = [
   { id: 'goals_difference', label: 'Goals Difference' },
 ];
 
+const DASHBOARD_SELECTIONS = {
+  overall: 'overall',
+  individual: 'individual',
+  team: 'team',
+};
 const DashboardPage = () => {
-  const [players, setPlayers] = useState([]);
+  const [allPlayerStats, setAllPlayerStats] = useState({
+    overall: [],
+    individual: [],
+    team: [],
+  });
+  const [playersStats, setPlayerStats] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [dashBoardSelection, setDashBoardSelection] = useState(
+    DASHBOARD_SELECTIONS.overall
+  );
 
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
@@ -54,7 +68,7 @@ const DashboardPage = () => {
     try {
       const { data } = await axios.get('/api/players/stats');
       if (data) {
-        setPlayers(data);
+        setAllPlayerStats(data);
       }
     } catch (error) {
       console.error('Error fetching player data:', error);
@@ -65,6 +79,13 @@ const DashboardPage = () => {
     fetchPlayersStats();
   }, []);
 
+  useEffect(() => {
+    if (allPlayerStats && allPlayerStats[dashBoardSelection]) {
+      setPlayerStats(allPlayerStats[dashBoardSelection]);
+    }
+    setPage(0);
+  }, [allPlayerStats, dashBoardSelection]);
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -74,11 +95,13 @@ const DashboardPage = () => {
     setPage(0);
   };
 
-  const paginatedData = players.slice(
+  const paginatedData = playersStats.slice(
     page * rowsPerPage,
     (page + 1) * rowsPerPage
   );
-
+  const highlightStyle = {
+    color: 'black',
+  };
   return (
     <>
       <AddMatchModal
@@ -96,8 +119,44 @@ const DashboardPage = () => {
           Missing a match?
         </AddButton>
       </Grid>
-
       <Container>
+        <ButtonGroup variant='text' size='small'>
+          <ButtonSelection
+            id={DASHBOARD_SELECTIONS.overall}
+            style={
+              DASHBOARD_SELECTIONS.overall === dashBoardSelection
+                ? highlightStyle
+                : {}
+            }
+            onClick={() => setDashBoardSelection(DASHBOARD_SELECTIONS.overall)}
+          >
+            Overall Stats
+          </ButtonSelection>
+          <ButtonSelection
+            id={DASHBOARD_SELECTIONS.individual}
+            style={
+              DASHBOARD_SELECTIONS.individual === dashBoardSelection
+                ? highlightStyle
+                : {}
+            }
+            onClick={() =>
+              setDashBoardSelection(DASHBOARD_SELECTIONS.individual)
+            }
+          >
+            Individual Matches Stats
+          </ButtonSelection>
+          <ButtonSelection
+            id={DASHBOARD_SELECTIONS.team}
+            style={
+              DASHBOARD_SELECTIONS.team === dashBoardSelection
+                ? highlightStyle
+                : {}
+            }
+            onClick={() => setDashBoardSelection(DASHBOARD_SELECTIONS.team)}
+          >
+            Team Matches Stats
+          </ButtonSelection>
+        </ButtonGroup>
         <Table>
           <TableHead>
             <TableRow>
@@ -107,25 +166,27 @@ const DashboardPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedData.map((player, index) => (
-              <TableRow key={`${player.player_id}`}>
-                {COLUMNS_STATS.map((column) => (
-                  <Row key={`${player.player_id}-${column.id}`}>
-                    {column.render
-                      ? column.render(
-                          player[column.id],
-                          index,
-                          page,
-                          rowsPerPage
-                        )
-                      : player[column.id]}
-                  </Row>
-                ))}
-              </TableRow>
-            ))}
+            {paginatedData.map((player, index) => {
+              return (
+                <TableRow key={`${player.player_id}-${index}`}>
+                  {COLUMNS_STATS.map((column) => (
+                    <Row key={`${player.player_id}-${column.id}-${index}`}>
+                      {column.render
+                        ? column.render(
+                            player[column.id],
+                            index,
+                            page,
+                            rowsPerPage
+                          )
+                        : player[column.id]}
+                    </Row>
+                  ))}
+                </TableRow>
+              );
+            })}
           </TableBody>
           <TablePagination
-            count={players.length}
+            count={playersStats.length}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
@@ -144,7 +205,7 @@ const DashboardPage = () => {
 };
 
 const Container = styled.div`
-  margin: auto;
+  margin: 20px auto;
   padding: 20px;
   width: 80%;
   @media (min-width: 800px) {
@@ -165,9 +226,14 @@ const HeadRow = styled(TableCell)`
     text-align: left;
   }
 `;
-
 const AddButton = styled(Button)`
   font-weight: bold;
   color: gray;
+`;
+
+const ButtonSelection = styled(Button)`
+  margin: 0 2px 0 0;
+  color: gray;
+  font-weight: bold;
 `;
 export default DashboardPage;
