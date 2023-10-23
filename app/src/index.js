@@ -5,6 +5,7 @@ import App from './App';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import MatchPage from './pages/MatchPage';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Dashboard from './pages/Dashboard';
 
 const theme = createTheme({
   palette: {
@@ -26,6 +27,7 @@ if (rootElement) {
         <BrowserRouter>
           <Routes>
             <Route path='/' Component={App}>
+              <Route path='/' Component={Dashboard} />
               <Route path='/match' Component={MatchPage} />
             </Route>
           </Routes>

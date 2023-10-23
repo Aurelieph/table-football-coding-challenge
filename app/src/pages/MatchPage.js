@@ -88,7 +88,7 @@ const MatchPage = () => {
           <Section>
             <StyledAutocomplete
               id='player1'
-              value={team1.ids}
+              value={players.filter((player) => team1.ids.includes(player.id))}
               options={
                 team1.ids.length > 1
                   ? players.filter((player) => team1.ids.includes(player.id))
@@ -140,7 +140,7 @@ const MatchPage = () => {
           <Section>
             <StyledAutocomplete
               id='player2'
-              value={team2.ids}
+              value={players.filter((player) => team2.ids.includes(player.id))}
               options={
                 team2.ids.length > 1
                   ? players.filter((player) => team2.ids.includes(player.id))

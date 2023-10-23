@@ -11,7 +11,7 @@ const Menubar = () => {
     <AppBar position='static'>
       <Toolbar>
         <Grid container>
-          <Grid xs={4}>
+          <Grid item xs={4}>
             <Typography
               variant='h3'
               component={Link}
@@ -27,6 +27,7 @@ const Menubar = () => {
             </Typography>
           </Grid>
           <Grid
+            item
             xs={8}
             sx={{
               display: 'flex',
