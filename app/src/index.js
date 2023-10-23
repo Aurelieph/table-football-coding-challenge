@@ -5,12 +5,12 @@ import App from './App';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import MatchPage from './pages/MatchPage';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Dashboard from './pages/Dashboard';
+import DashboardPage from './pages/DashboardPage';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: 'rgb(75, 72, 175)',
+      main: 'rgb(17, 17, 49)',
     },
     secondary: {
       main: 'rgb(255,224,170)',
@@ -27,7 +27,7 @@ if (rootElement) {
         <BrowserRouter>
           <Routes>
             <Route path='/' Component={App}>
-              <Route path='/' Component={Dashboard} />
+              <Route path='/' Component={DashboardPage} />
               <Route path='/match' Component={MatchPage} />
             </Route>
           </Routes>

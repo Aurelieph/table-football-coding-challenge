@@ -4,31 +4,14 @@ import React from 'react';
 import { Autocomplete, Button, Grid, TextField } from '@mui/material';
 import styled from '@emotion/styled';
 import SnackbarComponent from '../components/SnackbarComponent';
+import { useOutletContext } from 'react-router-dom';
 
 const MatchPage = () => {
-  const [players, setPlayers] = useState([]);
   const [team1, setTeam1] = useState({ ids: [], score: 0, is_team: false });
   const [team2, setTeam2] = useState({ ids: [], score: 0, is_team: false });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  useEffect(() => {
-    async function fetchPlayers() {
-      try {
-        const { data } = await axios.get('/api/players');
-        if (data) {
-          setPlayers(data);
-        } else {
-          console.error('Failed to fetch player data');
-        }
-      } catch (error) {
-        console.error('Error fetching player data:', error);
-      }
-    }
-
-    fetchPlayers();
-  }, []);
+  const { players } = useOutletContext();
 
   const isSaveDisabled = () => {
     const haveCommonPlayers = () => {
@@ -50,9 +33,8 @@ const MatchPage = () => {
     return false;
   };
 
-  const openSnackbar = (message, severity) => {
+  const openSnackbar = (message) => {
     setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
 
@@ -67,7 +49,7 @@ const MatchPage = () => {
       }
     );
     if (update.status === 201) {
-      openSnackbar('Match saved successfully', 'success');
+      openSnackbar('Matches saved successfully');
       setTeam1({ ids: [], score: 0, is_team: false });
       setTeam2({ ids: [], score: 0, is_team: false });
     }
@@ -103,7 +85,7 @@ const MatchPage = () => {
                       ids: value.map((player) => player.id),
                       is_team: true,
                     });
-                  } else if (value.length === 1) {
+                  } else {
                     setTeam1({
                       ...team1,
                       ids: value[0]?.id ? [value[0].id] : [],
@@ -200,7 +182,7 @@ const MatchPage = () => {
           <Button
             variant='contained'
             disabled={isSaveDisabled()}
-            onClick={async () => {
+            onClick={() => {
               handleSave();
             }}
           >
@@ -211,7 +193,6 @@ const MatchPage = () => {
       <SnackbarComponent
         open={snackbarOpen}
         message={snackbarMessage}
-        severity={snackbarSeverity}
         onClose={() => setSnackbarOpen(false)}
       />
     </Box>
