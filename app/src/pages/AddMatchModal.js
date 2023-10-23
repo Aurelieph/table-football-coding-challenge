@@ -12,6 +12,7 @@ export default function AddMatchModal({
   open,
   handleClose,
   openSnackbar,
+  setSnackbarSeverity,
   refreshData,
 }) {
   const InitialMatch = {
@@ -42,27 +43,61 @@ export default function AddMatchModal({
   };
 
   const handleSave = async () => {
-    const update = await axios.post(
-      '/api/matches',
-      { matches },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    console.log('matches', matches);
+    try {
+      const update = await axios.post(
+        '/api/matches',
+        { matches },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (update.status === 201) {
+        openSnackbar('Match saved successfully');
+        setSnackbarSeverity('success');
+        setMatches([InitialMatch]);
+        refreshData();
       }
-    );
-    if (update.status === 201) {
-      openSnackbar('Match saved successfully');
-      setMatches([InitialMatch]);
-      refreshData();
+    } catch (error) {
+      console.error('Error adding scores:', error);
+      openSnackbar('Error adding match');
+      setSnackbarSeverity('error');
     }
+  };
+  const isSaveDisabled = () => {
+    const hasMissingPlayers = matches.some((match) => {
+      return match.team1.ids.length === 0 || match.team2.ids.length === 0;
+    });
+
+    if (hasMissingPlayers) {
+      return {
+        result: true,
+        message: 'Please select players for both teams',
+      };
+    }
+    const hasCommonPlayers = matches.some((match) => {
+      return match.team1.ids.some((id) => match.team2.ids.includes(id));
+    });
+
+    if (hasCommonPlayers) {
+      return { result: true, message: 'Players cannot be in both teams' };
+    }
+    const hasNegativeScore = matches.some((match) => {
+      return match.team1.score < 0 || match.team2.score < 0;
+    });
+    if (hasNegativeScore) {
+      return { result: true, message: 'Score cannot be negative' };
+    }
+    return { result: false, message: '' };
   };
 
   return (
     <Modal open={open} onClose={handleClose} style={{ overflow: 'scroll' }}>
       <StyledBox>
-        <Typography variant='h5' component='h2'>
-          Add match result here
+        <Typography variant='h4' component='h2'>
+          Add Match Results
         </Typography>
         <div>
           {matches.map((match, index) => (
@@ -224,14 +259,26 @@ export default function AddMatchModal({
           </Button>
         </div>
         <ActionSection>
-          <Button
-            onClick={() => {
-              handleSave();
+          <Grid
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
             }}
-            variant='contained'
           >
-            Save
-          </Button>
+            <Button
+              onClick={() => {
+                handleSave();
+              }}
+              variant='contained'
+              disabled={isSaveDisabled().result}
+            >
+              Save
+            </Button>
+            <Typography variant='caption'>
+              {isSaveDisabled().result ? isSaveDisabled().message : ''}
+            </Typography>
+          </Grid>
         </ActionSection>
       </StyledBox>
     </Modal>

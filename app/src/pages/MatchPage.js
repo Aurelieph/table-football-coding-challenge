@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import React from 'react';
-import { Autocomplete, Button, Grid, TextField } from '@mui/material';
+import {
+  Autocomplete,
+  Avatar,
+  Button,
+  Divider,
+  Grid,
+  TextField,
+  Typography,
+} from '@mui/material';
 import styled from '@emotion/styled';
 import SnackbarComponent from '../components/SnackbarComponent';
 import { useOutletContext } from 'react-router-dom';
@@ -11,6 +19,7 @@ const MatchPage = () => {
   const [team2, setTeam2] = useState({ ids: [], score: 0, is_team: false });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const { players } = useOutletContext();
 
   const isSaveDisabled = () => {
@@ -23,18 +32,19 @@ const MatchPage = () => {
       return false;
     };
 
-    if (
-      team1.ids.length === 0 ||
-      team2.ids.length === 0 ||
-      haveCommonPlayers()
-    ) {
-      return true;
+    if (team1.ids.length === 0 || team2.ids.length === 0) {
+      return { result: true, message: '' };
     }
-    return false;
+    if (haveCommonPlayers()) {
+      return { result: true, message: 'Same player cannot be in both teams' };
+    }
+
+    return { result: false, message: '' };
   };
 
-  const openSnackbar = (message) => {
+  const openSnackbar = (message, severity) => {
     setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
 
@@ -50,8 +60,30 @@ const MatchPage = () => {
     );
     if (update.status === 201) {
       openSnackbar('Matches saved successfully');
+      setSnackbarSeverity('success');
       setTeam1({ ids: [], score: 0, is_team: false });
       setTeam2({ ids: [], score: 0, is_team: false });
+    }
+  };
+  const getTeamInitials = (teamId) => {
+    if (teamId === 1) {
+      if (team1.ids.length > 1) {
+        return team1.ids
+          .map((id) => players.find((player) => player.id === id).name[0])
+          .join('&');
+      }
+      return team1.ids.length > 0
+        ? players.find((player) => player.id === team1.ids[0]).name[0]
+        : '';
+    } else {
+      if (team2.ids.length > 1) {
+        return team2.ids
+          .map((id) => players.find((player) => player.id === id).name[0])
+          .join('&');
+      }
+      return team2.ids.length > 0
+        ? players.find((player) => player.id === team2.ids[0]).name[0]
+        : '';
     }
   };
 
@@ -98,16 +130,25 @@ const MatchPage = () => {
                 <TextField
                   {...params}
                   variant='standard'
+                  style={{ height: '100px' }}
                   label={team1.ids.length > 1 ? 'Team 1' : 'Player 1'}
                 />
               )}
               multiple
             />
-            <Grid sx={{ fontSize: '60px' }}>{team1.score}</Grid>
+            {(team1.ids.length > 0 || team2.ids.length > 0) && (
+              <Avatar sx={{ width: '80px', height: '80px' }}>
+                {getTeamInitials(1)}
+              </Avatar>
+            )}
+            <Grid sx={{ fontSize: '60px', marginTop: '30px' }}>
+              {team1.score}
+            </Grid>
             <Grid>
               <StyledButton
                 onClick={() => setTeam1({ ...team1, score: team1.score - 1 })}
                 variant='outlined'
+                disabled={team1.score === 0}
               >
                 -
               </StyledButton>
@@ -119,6 +160,40 @@ const MatchPage = () => {
               </StyledButton>
             </Grid>
           </Section>
+
+          <Grid
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 20px',
+            }}
+          >
+            <Divider
+              orientation='vertical'
+              style={{
+                height: '60px',
+              }}
+            />
+            <Typography
+              variant='h5'
+              style={{
+                fontStyle: 'italic',
+                fontWeight: 'bold',
+                fontSize: '60px',
+              }}
+            >
+              VS
+            </Typography>
+            <Divider
+              orientation='vertical'
+              style={{
+                height: '90px',
+              }}
+            />
+          </Grid>
+
           <Section>
             <StyledAutocomplete
               id='player2'
@@ -150,16 +225,25 @@ const MatchPage = () => {
                 <TextField
                   {...params}
                   variant='standard'
+                  style={{ height: '100px' }}
                   label={team2.ids.length > 1 ? 'Team 2' : 'Player 2'}
                 />
               )}
               multiple
             />
-            <Grid sx={{ fontSize: '60px' }}>{team2.score}</Grid>
+            {(team1.ids.length > 0 || team2.ids.length > 0) && (
+              <Avatar sx={{ width: '80px', height: '80px' }}>
+                {getTeamInitials(2)}
+              </Avatar>
+            )}
+            <Grid sx={{ fontSize: '60px', marginTop: '30px' }}>
+              {team2.score}
+            </Grid>
             <Grid>
               <StyledButton
                 onClick={() => setTeam2({ ...team2, score: team2.score - 1 })}
                 variant='outlined'
+                disabled={team2.score === 0}
               >
                 -
               </StyledButton>
@@ -172,26 +256,30 @@ const MatchPage = () => {
             </Grid>
           </Section>
         </SubContainer>
+
         <Grid
           sx={{
             display: 'flex',
-            justifyContent: 'center',
-            margin: '100px 0 20px',
+            flexDirection: 'column',
+            alignItems: 'center',
+            margin: '20px 0',
           }}
         >
           <Button
             variant='contained'
-            disabled={isSaveDisabled()}
+            disabled={isSaveDisabled().result}
             onClick={() => {
               handleSave();
             }}
           >
             Save Final Score
           </Button>
+          <Typography variant='caption'>{isSaveDisabled().message}</Typography>
         </Grid>
       </Container>
       <SnackbarComponent
         open={snackbarOpen}
+        severity={snackbarSeverity}
         message={snackbarMessage}
         onClose={() => setSnackbarOpen(false)}
       />
@@ -208,7 +296,7 @@ const Box = styled.div`
 `;
 const StyledAutocomplete = styled(Autocomplete)`
   min-width: 100px;
-  height: 150px;
+  height: 130px;
   @media (min-width: 800px) {
     width: 220px;
   }
@@ -218,6 +306,7 @@ const Container = styled.div`
   padding: 20px;
   border-radius: 20px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.25);
+  margin-top: 20px;
 `;
 const SubContainer = styled.div`
   display: flex;

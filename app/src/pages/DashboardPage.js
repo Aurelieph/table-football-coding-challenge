@@ -39,13 +39,15 @@ const DashboardPage = () => {
   const [openModal, setOpenModal] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
-  const openSnackbar = (message) => {
+  const openSnackbar = (message, severity) => {
     setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
     setSnackbarOpen(true);
   };
   const fetchPlayersStats = async () => {
@@ -83,6 +85,7 @@ const DashboardPage = () => {
         open={openModal}
         handleClose={handleClose}
         openSnackbar={openSnackbar}
+        setSnackbarSeverity={setSnackbarSeverity}
         refreshData={fetchPlayersStats}
       />
       <Grid
@@ -133,6 +136,7 @@ const DashboardPage = () => {
       <SnackbarComponent
         open={snackbarOpen}
         message={snackbarMessage}
+        severity={snackbarSeverity}
         onClose={() => setSnackbarOpen(false)}
       />
     </>
