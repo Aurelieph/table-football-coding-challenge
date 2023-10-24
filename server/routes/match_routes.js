@@ -1,18 +1,56 @@
 const router = require('express').Router();
 const db = require('../db');
 
-// GET /api/matches
-router.get('/', async (req, res) => {
-  try {
-    const data = await db('matches').select('*');
-    res.status(200).json(data);
-  } catch (error) {
-    console.error('Error retrieving matches data:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Team:
+ *       type: object
+ *       properties:
+ *         ids:
+ *           type: array
+ *           example: []
+ *         score:
+ *           type: integer
+ *         is_team:
+ *           type: boolean
+ *           example: false
+ */
 
-// POST /api/matches
+/**
+ * @swagger
+ * /api/matches:
+ *   post:
+ *     description: Create multiple matches and add scores for them
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               matches:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     date:
+ *                       type: string
+ *                       format: date
+ *                     team1:
+ *                       $ref: '#/components/schemas/Team'
+ *                     team2:
+ *                       $ref: '#/components/schemas/Team'
+ *     responses:
+ *       201:
+ *         description: Matches created successfully
+ *       400:
+ *         description: No players selected in one of the team
+ *       500:
+ *         description: Internal server error
+ */
+
 router.post('/', async (req, res) => {
   const { matches } = req.body;
   try {

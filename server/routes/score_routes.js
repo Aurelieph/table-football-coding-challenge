@@ -1,12 +1,40 @@
 const router = require('express').Router();
 const db = require('../db');
 
-// POST /api/scores
+/**
+ * @swagger
+ * /api/scores:
+ *   post:
+ *     description: Create a new match and add scores for it
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               team1:
+ *                 $ref: '#/components/schemas/Team'
+ *               team2:
+ *                 $ref: '#/components/schemas/Team'
+ *     responses:
+ *       201:
+ *          description: Scores added successfully
+ *       400:
+ *          description: No players selected
+ *       500:
+ *          description: Internal server error
+ */
+
 router.post('/', async (req, res) => {
   const { team1, team2 } = req.body;
   try {
     const players = [];
     const newMatchID = await db('matches').insert({}).returning('id');
+
+    if (team1.ids.length === 0 || team2.ids.length === 0) {
+      return res.status(400).json({ error: 'No players selected' });
+    }
 
     team1.ids.forEach(async (id) => {
       const data = {
