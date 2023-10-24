@@ -10,7 +10,7 @@ import {
   TablePagination,
   TableRow,
 } from '@mui/material';
-import axios from 'axios';
+import { fetcher } from '../common/fetcher';
 import React, { useEffect, useState } from 'react';
 import AddMatchModal from './AddMatchModal';
 import SnackbarComponent from '../components/SnackbarComponent';
@@ -66,7 +66,7 @@ const DashboardPage = () => {
   };
   const fetchPlayersStats = async () => {
     try {
-      const { data } = await axios.get('/api/players/stats');
+      const { data } = await fetcher.get('/api/players/stats');
       if (data) {
         setAllPlayerStats(data);
       }

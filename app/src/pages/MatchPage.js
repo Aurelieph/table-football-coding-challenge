@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import { fetcher } from '../common/fetcher';
 import React from 'react';
 import {
   Autocomplete,
@@ -38,6 +38,9 @@ const MatchPage = () => {
     if (haveCommonPlayers()) {
       return { result: true, message: 'Same player cannot be in both teams' };
     }
+    if (team1.score === 0 && team2.score === 0) {
+      return { result: true, message: '' };
+    }
 
     return { result: false, message: '' };
   };
@@ -49,7 +52,7 @@ const MatchPage = () => {
   };
 
   const handleSave = async () => {
-    const update = await axios.post(
+    const update = await fetcher.post(
       '/api/scores',
       { team1, team2 },
       {
@@ -86,7 +89,7 @@ const MatchPage = () => {
         : '';
     }
   };
-
+  const AVATAR_SiZE = { circle: '150px', font: '60px' };
   return (
     <Box>
       <Grid
@@ -137,7 +140,13 @@ const MatchPage = () => {
               multiple
             />
             {(team1.ids.length > 0 || team2.ids.length > 0) && (
-              <Avatar sx={{ width: '80px', height: '80px' }}>
+              <Avatar
+                sx={{
+                  width: AVATAR_SiZE.circle,
+                  height: AVATAR_SiZE.circle,
+                  fontSize: AVATAR_SiZE.font,
+                }}
+              >
                 {getTeamInitials(1)}
               </Avatar>
             )}
@@ -232,7 +241,13 @@ const MatchPage = () => {
               multiple
             />
             {(team1.ids.length > 0 || team2.ids.length > 0) && (
-              <Avatar sx={{ width: '80px', height: '80px' }}>
+              <Avatar
+                sx={{
+                  width: AVATAR_SiZE.circle,
+                  height: AVATAR_SiZE.circle,
+                  fontSize: AVATAR_SiZE.font,
+                }}
+              >
                 {getTeamInitials(2)}
               </Avatar>
             )}

@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import './App.css';
 import Menubar from './components/Menubar';
 import { Outlet } from 'react-router-dom';
-import axios from 'axios';
+import { fetcher } from './common/fetcher';
 
 function App() {
   const [players, setPlayers] = React.useState([]);
   const fetchPlayers = async () => {
     try {
-      const { data } = await axios.get('/api/players');
+      const { data } = await fetcher.get('/api/players');
       if (data) {
         setPlayers(data);
       } else {

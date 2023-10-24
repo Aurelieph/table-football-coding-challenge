@@ -6,7 +6,7 @@ import { Autocomplete, Button, Grid, TextField } from '@mui/material';
 import styled from '@emotion/styled';
 import { useOutletContext } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
+import { fetcher } from '../common/fetcher';
 
 export default function AddMatchModal({
   open,
@@ -44,7 +44,7 @@ export default function AddMatchModal({
 
   const handleSave = async () => {
     try {
-      const update = await axios.post(
+      const update = await fetcher.post(
         '/api/matches',
         { matches },
         {

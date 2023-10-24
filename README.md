@@ -60,7 +60,8 @@ The following dependencies are required for the frontend part of the project (fo
     "knex": "^3.0.1",
     "pg": "^8.11.3",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "cors": "^2.8.5"
   }
 }
 ```
